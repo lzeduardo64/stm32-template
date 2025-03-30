@@ -6,15 +6,14 @@ include $(OPENCM3_DIR)/mk/genlink-config.mk
 LDSCRIPT = $(BUILDDIR)/generated.$(DEVICE).ld
 
 # Includes
-INCLUDES = -I$(OPENCM3_DIR)/include \
-           -Iinclude
+INCLUDES = -Iinclude
 
 # Flags de compilação
-CFLAGS = -mthumb -Os -ffunction-sections -fdata-sections \
-         -DSTM32F1 -Wall $(INCLUDES)
+CFLAGS = $(ARCH_FLAGS) -Os -ffunction-sections -fdata-sections -Wall $(INCLUDES)
 
 # Flags de linkagem
-LDFLAGS = -nostartfiles -T$(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$(BUILDDIR)/main.map
+LDFLAGS += -nostartfiles -T$(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$(BUILDDIR)/main.map
+#LDFLAGS += -specs=nano.specs -specs=nosys.specs
 
 # Arquivos do projeto
 SRCS = $(wildcard $(SRCDIR)/*.c) 
@@ -22,7 +21,7 @@ OBJS = $(patsubst %.c, $(BUILDDIR)/%.o, $(SRCS))
 
 # Linkagem final
 $(BUILDDIR)/main.elf: $(OBJS) $(LDSCRIPT)
-	$(CC) $(OBJS) -L$(OPENCM3_DIR)/lib -lopencm3_stm32f1 $(LDFLAGS) -o $@
+	$(CC) $(OBJS) $(LDFLAGS)  $(LDLIBS) -o $@
 	$(SIZE) $@
 
 # Alvo principal
@@ -35,7 +34,7 @@ $(BUILDDIR):
 # Compilação dos arquivos do projeto
 $(BUILDDIR)/%.o: %.c | $(BUILDDIR)
 	@ mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Gerar arquivo binário para flash
 $(BUILDDIR)/main.bin: $(BUILDDIR)/main.elf
